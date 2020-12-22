@@ -132,7 +132,13 @@ class UDPSocketTransport:
         except (OSError, IOError):
             self.close()
             self.open()
-            self.socket.sendto(syslog_msg, self.address)
+            try:
+                self.socket.sendto(syslog_msg, self.address)
+            except OSError as exc:
+                if exc.errno == 101:  # network unreachable
+                    pass
+                else:
+                    raise
 
     def close(self):
         self.socket.close()
